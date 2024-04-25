@@ -1,0 +1,7 @@
+Usage: my_utility [--help] [--version]
+
+Linux command-line utility which ...
+
+Optional arguments:
+  -h, --help     shows help message and exits 
+  -v, --version  prints version information and exits 
