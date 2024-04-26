@@ -16,5 +16,5 @@ cd ${ORIGINAL_DIR}
 # exportable aliases
 
 export UTILITY_DIR
-mu () { ${UTILITY_DIR}/build/my_utility.exe $* ; }
-export -f mu
+rn () { ${UTILITY_DIR}/build/rename.exe $* ; }
+export -f rn

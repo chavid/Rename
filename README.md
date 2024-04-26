@@ -1,10 +1,9 @@
 
 # Linux Utility template
 
-This is a template for a Linux command-line utility which .... The key features are:
--  ;
-- .
-
+This is a template for a Linux command-line utility which to rename files using global patterns. The key features are:
+- works on all the files from the current directory ;
+- use simple patterns with % as a wildcard.
 
 
 ## Credits
@@ -22,7 +21,10 @@ It can be compiled with any compiler supporting C++20.
 
 ## Fast and dirty guide
 
-UNDER WORK...
+See `rn --help`.
+
+Examples :
+- `rn -p "%_%" -r "%-%"` will replace all the underscores by dashes.
 
 The [complete guide](tests/USERGUIDE.md) is UNDER WORK also...
 

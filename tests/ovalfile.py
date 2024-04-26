@@ -3,7 +3,8 @@
 
 targets = [
 
-    { "name" : "my_utility_help" , "command" : "mu --help" },
+    { "name" : "help" , "command" : "rn --help" },
+    { "name" : "txt_md" , "command" : "rn -c .txt .md" },
 
 ]
 

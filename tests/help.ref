@@ -1,0 +1,13 @@
+Usage: rn [--help] [--version] [--directory VAR] [--check] from to
+
+Rename files using global patterns.
+
+Positional arguments:
+  from             the input names pattern. 
+  to               the output names pattern. 
+
+Optional arguments:
+  -h, --help       shows help message and exits 
+  -v, --version    prints version information and exits 
+  -d, --directory  specify the directory to start from. [nargs=0..1] [default: "/work/Rename/tests"]
+  -c, --check      do not really apply the renaming. 
