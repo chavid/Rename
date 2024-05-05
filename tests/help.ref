@@ -9,5 +9,5 @@ Positional arguments:
 Optional arguments:
   -h, --help       shows help message and exits 
   -v, --version    prints version information and exits 
-  -d, --directory  specify the directory to start from. [nargs=0..1] [default: "/work/Rename/tests"]
+  -d, --directory  specify the directory to start from. [nargs=0..1] [default: "/work/tests"]
   -c, --check      do not really apply the renaming. 

@@ -1,8 +1,8 @@
 
-# Linux Utility template
+# Rename
 
-This is a template for a Linux command-line utility which to rename files using global patterns. The key features are:
-- works on all the files from the current directory ;
+This is a Linux command-line utility which recursively rename files and dorectories using global patterns. Can be helpful to rename files from a camera, or to rename directories from a backup. The key features are:
+- works on all the files and directories recursively ;
 - use simple patterns with % as a wildcard.
 
 

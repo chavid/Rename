@@ -17,27 +17,15 @@
 #include <regex>
 
 #include "argparse.hpp"
-
-namespace fs = std::filesystem ;
-
-using StringVec = std::vector<std::string> ;
-using StringSet = std::set<std::string> ;
-using StringViewVec = std::vector<std::string_view> ;
-using StringViewSet = std::set<std::string_view> ;
+#include "utilities.hh"
 
 struct Context
  {
   StringViewSet rejected ;
-  std::string from ;
+  std::regex from ;
   std::string to ;
   bool check ;
  } ;
-
-void lower( std::string & str )
- {
-  std::transform(str.begin(),str.end(),str.begin(),
-   [](unsigned char c){ return std::tolower(c) ; } ) ;
- }
 
 void rename_file( Context & cs, fs::path const & path )
  {
@@ -47,15 +35,24 @@ void rename_file( Context & cs, fs::path const & path )
   if ((ext.empty())||cs.rejected.contains(ext))
    { return ; }
 
-  // echo
+  // test
   auto filename = path.filename().string() ;
-  auto pos = filename.find(cs.from) ;
-  if (pos==std::string::npos)
-   { return ; }
-  filename.replace(pos,cs.from.length(),cs.to) ;
-  std::cout<<path<<" => "<<filename<<std::endl ;
+  std::smatch from_match ;
+  if ( ! std::regex_match(filename,from_match,cs.from) )
+    { return ; }
+
+  // replace
+  std::string newname { cs.to } ;
+  const std::regex wildchar_re { "%" } ;
+  for ( std::size_t i = 1 ; i < from_match.size() ; ++i )
+    { newname = std::regex_replace(newname,wildchar_re,from_match[i].str(),std::regex_constants::format_first_only) ; }
+
+  //auto pos = filename.find(cs.from) ;
+  //if (pos==std::string::npos)
+  //filename.replace(pos,cs.from.length(),cs.to) ;
+  std::cout<<path<<" => "<<newname<<std::endl ;
   if (!cs.check)
-   { fs::rename(path,path.parent_path()/filename) ; }
+   { fs::rename(path,path.parent_path()/newname) ; }
 
   // end
   return ;
@@ -108,11 +105,21 @@ int main( int argc, char const* argv[] )
    }
   fs::path arg_path { program.get<std::string>("--directory") } ;
 
-  // Other configuration and constant values
+  // Look at command line arguments
+  std::string from_str = program.get<std::string>("from") ;
+  std::string to_str = program.get<std::string>("to") ;
+  std::size_t from_count = std::count(from_str.begin(),from_str.end(),'%') ;
+  std::size_t to_count = std::count(to_str.begin(),to_str.end(),'%') ;
+  if (from_count!=to_count)
+   { throw std::invalid_argument{ "input and output patterns must have the same number of %" } ; }
+
+  // Configuration and constant values
   Context cs ;
   cs.rejected = { ".exe", ".html", ".sty" } ;
-  cs.from = program.get<std::string>("from") ;
-  cs.to = program.get<std::string>("to") ;
+  from_str = escape(from_str) ;
+  from_str = std::regex_replace(from_str,std::regex("%"),"(.+)") ;
+  cs.from = std::regex { from_str } ;
+  cs.to = to_str ;
   cs.check = program.get<bool>("--check") ;
 
   // Scan directory
