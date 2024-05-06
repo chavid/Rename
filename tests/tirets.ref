@@ -1,5 +1,6 @@
 
 "/work/tests/txt_md.out" => txt-md.out
 "/work/tests/txt_md.ref" => txt-md.ref
+"/work/tests/SubDir1/file4_txt_md" => file4-txt-md
 "/work/tests/rename_help.ref" => rename-help.ref
 

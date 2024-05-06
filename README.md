@@ -1,10 +1,9 @@
 
 # Rename
 
-This is a Linux command-line utility which recursively rename files and dorectories using global patterns. Can be helpful to rename files from a camera, or to rename directories from a backup. The key features are:
+This is a Linux command-line utility which recursively rename files and directories using shell-like patterns (with `%`instead of `*`). Can be helpful to rename files from a camera, or to rename directories from a backup. The key features are:
 - works on all the files and directories recursively ;
 - use simple patterns with % as a wildcard.
-
 
 ## Credits
 
@@ -24,11 +23,13 @@ It can be compiled with any compiler supporting C++20.
 See `rn --help`.
 
 Examples :
-- `rn -p "%_%" -r "%-%"` will replace all the underscores by dashes.
+- `rn "%_%" "%-%"` will replace all the underscores by dashes.
 
 The [complete guide](tests/USERGUIDE.md) is UNDER WORK also...
 
 
 ## Tips & tricks
 
-- ...
+- the `%` wildcard is replace with `.*` so to form an ECMAScript regular expression.
+- all other characters are "escaped" so that they just mean themselves.
+- the transformation on the file name is reapplied as long as the input pattern is matching.

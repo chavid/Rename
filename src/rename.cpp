@@ -32,27 +32,29 @@ void rename_file( Context & cs, fs::path const & path )
   // rejected extensions
   std::string ext { path.extension().generic_string() } ;
   lower(ext) ;
-  if ((ext.empty())||cs.rejected.contains(ext))
+  if (cs.rejected.contains(ext))
    { return ; }
-
   // test
+  bool modified { false } ;
   auto filename = path.filename().string() ;
   std::smatch from_match ;
-  if ( ! std::regex_match(filename,from_match,cs.from) )
-    { return ; }
-
-  // replace
-  std::string newname { cs.to } ;
-  const std::regex wildchar_re { "%" } ;
-  for ( std::size_t i = 1 ; i < from_match.size() ; ++i )
-    { newname = std::regex_replace(newname,wildchar_re,from_match[i].str(),std::regex_constants::format_first_only) ; }
-
-  //auto pos = filename.find(cs.from) ;
-  //if (pos==std::string::npos)
-  //filename.replace(pos,cs.from.length(),cs.to) ;
-  std::cout<<path<<" => "<<newname<<std::endl ;
-  if (!cs.check)
-   { fs::rename(path,path.parent_path()/newname) ; }
+  while ( std::regex_match(filename,from_match,cs.from) )
+   {
+    std::string newname { cs.to } ;
+    const std::regex wildcard_re { "%" } ;
+    for ( std::size_t i = 1 ; i < from_match.size() ; ++i )
+      { newname = std::regex_replace(newname,wildcard_re,from_match[i].str(),std::regex_constants::format_first_only) ; }
+    modified = true ;
+    filename = newname ;
+   }
+  
+  // rename
+  if ( modified )
+   {
+    std::cout<<path<<" => "<<filename<<std::endl ;
+    if (!cs.check)
+     { fs::rename(path,path.parent_path()/filename) ; }
+   }
 
   // end
   return ;
@@ -67,8 +69,11 @@ void scan_dir( fs::path const & path, RegularFileFunction uf )
   if (fs::is_directory(s))
    {
     std::string dirname { path.filename().string() } ;
-    // ignore hidden directories
-    if ((std::size(dirname)>1)&&(dirname[0]=='.')&&(dirname[1]!='.'))
+    // ignore .* directories
+    if ((std::size(dirname)>1)&&(dirname[0]=='.'))
+     { return ; }
+    // ignore __* directories
+    if ((std::size(dirname)>1)&&(dirname[0]=='_')&&(dirname[1]=='_'))
      { return ; }
     for ( auto it = fs::directory_iterator(path) ; it != fs::directory_iterator() ; ++it )
      { scan_dir(*it,uf) ; }
