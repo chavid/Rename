@@ -22,13 +22,15 @@
 struct Context
  {
   StringViewSet rejected ;
+  std::string from_str ;
+  std::string to_str ;
   std::regex from ;
-  std::string to ;
+  bool once = false ;
   bool check ;
  } ;
 
-void rename_file( Context & cs, fs::path const & path )
- {
+void rename_entry( Context & cs, fs::path const & path )
+ {;
   // rejected extensions
   std::string ext { path.extension().generic_string() } ;
   lower(ext) ;
@@ -36,24 +38,34 @@ void rename_file( Context & cs, fs::path const & path )
    { return ; }
   // test
   bool modified { false } ;
-  auto filename = path.filename().string() ;
+  auto entry_name = path.filename().string() ;
   std::smatch from_match ;
-  while ( std::regex_match(filename,from_match,cs.from) )
+  auto replace = [&]()
    {
-    std::string newname { cs.to } ;
+    std::string newname { cs.to_str } ;
     const std::regex wildcard_re { "%" } ;
     for ( std::size_t i = 1 ; i < from_match.size() ; ++i )
       { newname = std::regex_replace(newname,wildcard_re,from_match[i].str(),std::regex_constants::format_first_only) ; }
     modified = true ;
-    filename = newname ;
+    entry_name = newname ;
+   } ;
+  if (cs.once)
+   {
+    if ( std::regex_match(entry_name,from_match,cs.from) )
+     { replace() ; }
+   }
+  else
+   {
+    while ( std::regex_match(entry_name,from_match,cs.from) )
+     { replace() ; }
    }
   
   // rename
   if ( modified )
    {
-    std::cout<<path<<" => "<<filename<<std::endl ;
+    std::cout<<path<<" => "<<entry_name<<std::endl ;
     if (!cs.check)
-     { fs::rename(path,path.parent_path()/filename) ; }
+     { fs::rename(path,path.parent_path()/entry_name) ; }
    }
 
   // end
@@ -77,6 +89,7 @@ void scan_dir( fs::path const & path, RegularFileFunction uf )
      { return ; }
     for ( auto it = fs::directory_iterator(path) ; it != fs::directory_iterator() ; ++it )
      { scan_dir(*it,uf) ; }
+    uf(path) ;
    }
   else if (fs::is_regular_file(s))
    { uf(path) ; }
@@ -122,15 +135,16 @@ int main( int argc, char const* argv[] )
   Context cs ;
   cs.rejected = { ".exe", ".html", ".sty" } ;
   from_str = escape(from_str) ;
-  from_str = std::regex_replace(from_str,std::regex("%"),"(.+)") ;
-  cs.from = std::regex { from_str } ;
-  cs.to = to_str ;
+  cs.from_str = std::regex_replace(from_str,std::regex("%"),"(.+)") ;
+  cs.from = std::regex { cs.from_str } ;
+  cs.to_str = to_str ;
   cs.check = program.get<bool>("--check") ;
+  cs.once = std::regex_match(cs.to_str,cs.from) ;
 
   // Scan directory
   std::cout<<std::endl ;
   scan_dir(arg_path,[&]( fs::path const & path )
-   { rename_file(cs, path) ; });
+   { rename_entry(cs, path) ; });
 
   std::cout<<std::endl ;
   std::exit(0) ;
